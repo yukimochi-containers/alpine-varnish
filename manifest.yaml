@@ -1,0 +1,19 @@
+image: yukimochi/alpine-varnish:latest
+manifests:
+  -
+    image: yukimochi/alpine-varnish:latest-amd64
+    platform:
+      architecture: amd64
+      os: linux
+  -
+    image: yukimochi/alpine-varnish:latest-aarch64
+    platform:
+      architecture: arm64
+      variant: v8
+      os: linux
+  -
+    image: yukimochi/alpine-varnish:latest-armv7
+    platform:
+      architecture: arm
+      variant: v7
+      os: linux
