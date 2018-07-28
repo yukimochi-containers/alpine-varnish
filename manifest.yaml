@@ -11,3 +11,9 @@ manifests:
       architecture: arm64
       variant: v8
       os: linux
+  -
+    image: yukimochi/alpine-varnish:latest-armv7
+    platform:
+      architecture: arm
+      variant: v7
+      os: linux
