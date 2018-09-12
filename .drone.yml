@@ -1,9 +1,0 @@
-platform: linux/arm64
-
-pipeline:
-  docker:
-    dockerfile: Dockerfile
-    image: plugins/docker:linux-arm64
-    repo: yukimochi/alpine-varnish
-    secrets: [ docker_username, docker_password ]
-    tags: latest-aarch64

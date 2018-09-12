@@ -6,14 +6,14 @@ manifests:
       architecture: amd64
       os: linux
   -
-    image: yukimochi/alpine-varnish:latest-aarch64
+    image: yukimochi/alpine-varnish:latest-arm
+    platform:
+      architecture: arm
+      variant: v6
+      os: linux
+  -
+    image: yukimochi/alpine-varnish:latest-arm64
     platform:
       architecture: arm64
       variant: v8
-      os: linux
-  -
-    image: yukimochi/alpine-varnish:latest-armv7
-    platform:
-      architecture: arm
-      variant: v7
       os: linux
