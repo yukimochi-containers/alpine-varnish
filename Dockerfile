@@ -1,6 +1,6 @@
 FROM alpine:3.8
 
-ENV VARNISH_VER 6.1.0
+ENV VARNISH_VER 6.1.1
 
 RUN apk -U --no-cache upgrade && \
     apk add -U --no-cache --virt .dep build-base gcc libc-dev libgcc pcre-dev ncurses-dev libedit-dev py-docutils py-sphinx linux-headers libexecinfo-dev && \
