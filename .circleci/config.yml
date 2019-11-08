@@ -1,24 +1,40 @@
 version: 2
+workflows:
+  version: 2
+  build:
+    jobs:
+      - docker-image-amd64
+      - docker-image-arm
+      - docker-image-arm64
+      - docker-manifest:
+          requires:
+            - docker-image-amd64
+            - docker-image-arm
+            - docker-image-arm64
 jobs:
   docker-image-amd64:
     docker:
       - image: docker:git
+    environment:
+      VARNISH_VERSION: 1.12.0
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: build docker image
           command: |
-            docker build -t ${DOCKER_USER}/alpine-varnish:latest-amd64 .
+            docker build -t ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-amd64 .
       - run:
           name: upload image to docker hub.
           command: |
             docker login --username=${DOCKER_USER} --password=${DOCKER_PASS}
-            docker push ${DOCKER_USER}/alpine-varnish:latest-amd64
+            docker push ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-amd64
 
   docker-image-arm:
     machine:
       image: circleci/classic:edge
+    environment:
+      VARNISH_VERSION: 1.12.0
     steps:
       - checkout
       - run:
@@ -35,16 +51,18 @@ jobs:
       - run:
           name: build docker image
           command: |
-            docker build -t ${DOCKER_USER}/alpine-varnish:latest-arm .
+            docker build -t ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-arm .
       - run:
           name: upload image to docker hub.
           command: |
             docker login --username=${DOCKER_USER} --password=${DOCKER_PASS}
-            docker push ${DOCKER_USER}/alpine-varnish:latest-arm
+            docker push ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-arm
 
   docker-image-arm64:
     machine:
       image: circleci/classic:edge
+    environment:
+      VARNISH_VERSION: 1.12.0
     steps:
       - checkout
       - run:
@@ -61,12 +79,12 @@ jobs:
       - run:
           name: build docker image
           command: |
-            docker build -t ${DOCKER_USER}/alpine-varnish:latest-arm64 .
+            docker build -t ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-arm64 .
       - run:
           name: upload image to docker hub.
           command: |
             docker login --username=${DOCKER_USER} --password=${DOCKER_PASS}
-            docker push ${DOCKER_USER}/alpine-varnish:latest-arm64
+            docker push ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-arm64
 
   docker-manifest:
     docker:
@@ -82,18 +100,6 @@ jobs:
       - run:
           name: Push manifest
           command: |
+            sed -i -e 's/${VARNISH_VERSION}/1.12.0/g' manifest.yaml
             docker login --username=${DOCKER_USER} --password=${DOCKER_PASS}
-            manifest-tool push from-spec manifest.yaml            
-    
-workflows:
-  version: 2
-  build:
-    jobs:
-      - docker-image-amd64
-      - docker-image-arm
-      - docker-image-arm64
-      - docker-manifest:
-          requires:
-            - docker-image-amd64
-            - docker-image-arm
-            - docker-image-arm64
+            manifest-tool push from-spec manifest.yaml

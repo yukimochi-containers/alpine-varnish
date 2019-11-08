@@ -1,6 +1,6 @@
 FROM alpine:edge
 
-ENV VARNISH_VER 6.2.0
+ENV VARNISH_VER 6.3.1
 
 RUN apk add -U --no-cache varnish=${VARNISH_VER}-r1
 
