@@ -16,7 +16,7 @@ jobs:
     docker:
       - image: docker:git
     environment:
-      VARNISH_VERSION: 1.12.0
+      VARNISH_VERSION: 6.4.0
     steps:
       - checkout
       - setup_remote_docker
@@ -34,7 +34,7 @@ jobs:
     machine:
       image: circleci/classic:edge
     environment:
-      VARNISH_VERSION: 1.12.0
+      VARNISH_VERSION: 6.4.0
     steps:
       - checkout
       - run:
@@ -62,7 +62,7 @@ jobs:
     machine:
       image: circleci/classic:edge
     environment:
-      VARNISH_VERSION: 1.12.0
+      VARNISH_VERSION: 6.4.0
     steps:
       - checkout
       - run:
@@ -89,17 +89,19 @@ jobs:
   docker-manifest:
     docker:
       - image: docker:git
+    environment:
+      VARNISH_VERSION: 6.4.0
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Install manifest-tool
           command: |
-            wget https://github.com/estesp/manifest-tool/releases/download/v0.7.0/manifest-tool-linux-amd64 -O /usr/bin/manifest-tool
+            wget https://github.com/estesp/manifest-tool/releases/download/v1.0.1/manifest-tool-linux-amd64 -O /usr/bin/manifest-tool
             chmod +x /usr/bin/manifest-tool
       - run:
           name: Push manifest
           command: |
-            sed -i -e 's/${VARNISH_VERSION}/1.12.0/g' manifest.yaml
+            sed -i -e "s/latest/${VARNISH_VERSION}/g" manifest.yaml
             docker login --username=${DOCKER_USER} --password=${DOCKER_PASS}
             manifest-tool push from-spec manifest.yaml
