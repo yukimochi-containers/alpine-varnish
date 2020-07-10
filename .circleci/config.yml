@@ -3,16 +3,9 @@ workflows:
   version: 2
   build:
     jobs:
-      - docker-image-amd64
-      - docker-image-arm
-      - docker-image-arm64
-      - docker-manifest:
-          requires:
-            - docker-image-amd64
-            - docker-image-arm
-            - docker-image-arm64
+      - build-image
 jobs:
-  docker-image-amd64:
+  build-image:
     docker:
       - image: docker:git
     environment:
@@ -23,85 +16,11 @@ jobs:
       - run:
           name: build docker image
           command: |
-            docker build -t ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-amd64 .
+            docker build --build-arg VARNISH_VER=${VARNISH_VERSION} -t ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-amd64 .
+            docker tag ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-amd64 ${DOCKER_USER}/alpine-varnish:latest
       - run:
           name: upload image to docker hub.
           command: |
             docker login --username=${DOCKER_USER} --password=${DOCKER_PASS}
             docker push ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-amd64
-
-  docker-image-arm:
-    machine:
-      image: circleci/classic:edge
-    environment:
-      VARNISH_VERSION: 6.4.0
-    steps:
-      - checkout
-      - run:
-          name: Activate qemu
-          command: |
-            sudo docker run --rm --privileged multiarch/qemu-user-static:register --reset
-            wget https://github.com/multiarch/qemu-user-static/releases/download/v2.12.0-1/qemu-arm-static
-            chmod +x qemu-arm-static
-      - run:
-          name: Change Dockerfile
-          command: |
-            sed -i -e "s/alpine:/arm32v6\/alpine:/" Dockerfile
-            sed -i -e "2i ADD qemu-arm-static /usr/bin" Dockerfile
-      - run:
-          name: build docker image
-          command: |
-            docker build -t ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-arm .
-      - run:
-          name: upload image to docker hub.
-          command: |
-            docker login --username=${DOCKER_USER} --password=${DOCKER_PASS}
-            docker push ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-arm
-
-  docker-image-arm64:
-    machine:
-      image: circleci/classic:edge
-    environment:
-      VARNISH_VERSION: 6.4.0
-    steps:
-      - checkout
-      - run:
-          name: Activate qemu
-          command: |
-            sudo docker run --rm --privileged multiarch/qemu-user-static:register --reset
-            wget https://github.com/multiarch/qemu-user-static/releases/download/v2.12.0-1/qemu-aarch64-static
-            chmod +x qemu-aarch64-static
-      - run:
-          name: Change Dockerfile
-          command: |
-            sed -i -e "s/alpine:/arm64v8\/alpine:/" Dockerfile
-            sed -i -e "2i ADD qemu-aarch64-static /usr/bin" Dockerfile
-      - run:
-          name: build docker image
-          command: |
-            docker build -t ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-arm64 .
-      - run:
-          name: upload image to docker hub.
-          command: |
-            docker login --username=${DOCKER_USER} --password=${DOCKER_PASS}
-            docker push ${DOCKER_USER}/alpine-varnish:${VARNISH_VERSION}-arm64
-
-  docker-manifest:
-    docker:
-      - image: docker:git
-    environment:
-      VARNISH_VERSION: 6.4.0
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Install manifest-tool
-          command: |
-            wget https://github.com/estesp/manifest-tool/releases/download/v1.0.1/manifest-tool-linux-amd64 -O /usr/bin/manifest-tool
-            chmod +x /usr/bin/manifest-tool
-      - run:
-          name: Push manifest
-          command: |
-            sed -i -e "s/latest/${VARNISH_VERSION}/g" manifest.yaml
-            docker login --username=${DOCKER_USER} --password=${DOCKER_PASS}
-            manifest-tool push from-spec manifest.yaml
+            docker push ${DOCKER_USER}/alpine-varnish:latest
